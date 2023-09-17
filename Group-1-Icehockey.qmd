@@ -51,7 +51,11 @@ Our analysis involves the single-year data of the 2023 IIHF World Women\'s Champ
 
 ### What are the critical factors predicting a player's performance?
 
-Comprehensive sports analytics are essential for teams and athletes to make data-informed decisions and optimize performance. Furthermore, a rich source of information can significantly boost fan loyalty. In women's ice hockey, the publicly available data is limited in how important the attribute is for the player's performance. Moreover, a tidy dataset is not currently available. Hence, we wish to examine the player statistics of the participants in the 2023 Women's Ice Hockey World Championship and identify the key performance indicators.
+The challenge is to systematically identify and analyze the key factors that reliably predict a player's performance. This includes analyzing the physical, skill-based, psychological, and strategic elements that contribute to a player's effectiveness in the game. There is a need for a framework that allows coaches, teams, and players to make data-driven decisions and improve the overall competitive edge in the sport.
+
+For this study, we only looked at the official data on the physical and game statistics of 203 forwards and defenders. The rationale behind the decision to exclude goalies from our dataset stems from the disparity in their performance metrics with forwards and defenders.
+
+In women's ice hockey, the publicly available data is limited in terms of how important the attribute is for the players' performance. Furthermore, there is currently no tidy dataset available. So, we are collecting and putting together information from official documents and extending it. We also want to look at the player statistics of the participants in the 2023 Women's Ice Hockey World Championship and identify the key performance indicators for high-performing players
 
 {{< pagebreak >}}
 
