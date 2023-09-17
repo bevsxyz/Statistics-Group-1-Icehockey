@@ -35,11 +35,21 @@ bibliography: ref.bib
 
 # Executive Summary
 
-Our analysis involves the single-year data of the 2023 Women's Ice Hockey World Championship. We will address the individual player performance with linear regression and identify the key attributes affecting the performance.
+Ice hockey is a fast-paced team sport renowned for its combination of speed, physicality, and skill, predominantly played in cold-weather nations like Canada, the USA, Russia, Sweden, and Finland. Women's ice hockey, a variant of the sport played exclusively by female athletes, shares similarities with men's hockey but boasts its distinct history. Since 1990, the International Ice Hockey Federation (IIHF) has organized the IIHF World Women\'s Championship, showcasing the growth of women's ice hockey.
+
+The main objective in ice hockey is to score goals by shooting a puck into the opposing team's net. A standard game comprises three periods, each lasting 20 minutes, with intermissions for player rest and ice maintenance. Victory goes to the team with the most goals after these three periods.
+
+In a typical lineup, each team fields six players simultaneously on the ice, featuring a goaltender (goalie) and five skaters. These skaters are typically divided into three forwards (left wing, center, and right wing) and two defensemen.
+
+To maintain fairness and uphold the competitive spirit of the game, ice hockey employs an extensive set of rules and penalties. Players who commit infractions can be temporarily sidelined in the penalty box, leading to power plays (when one team has more players on the ice) or penalty kills (when a team is shorthanded). These regulations play a crucial role in preserving the integrity of the sport.
+
+Our analysis involves the single-year data of the 2023 IIHF World Women\'s Championship. We will address the individual player performance with linear regression and identify the key attributes affecting the performance.
 
 {{< pagebreak >}}
 
 # **Problem Statement**
+
+### What are the critical factors predicting a player's performance?
 
 Comprehensive sports analytics are essential for teams and athletes to make data-informed decisions and optimize performance. Furthermore, a rich source of information can significantly boost fan loyalty. In women's ice hockey, the publicly available data is limited in how important the attribute is for the player's performance. Moreover, a tidy dataset is not currently available. Hence, we wish to examine the player statistics of the participants in the 2023 Women's Ice Hockey World Championship and identify the key performance indicators.
 
