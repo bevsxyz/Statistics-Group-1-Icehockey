@@ -1,0 +1,107 @@
+---
+title: Statistics Group 1 Project Proposal
+subtitle: Ice Hockey
+date: 30 August 2023
+author:
+  - name: Bevan Stanely
+    id: bs
+    email: h20230860@pilani.bits-pilani.ac.in
+  - name: Nikhil Verma
+    id: nv
+  - name: Shantanu Sengupta
+    id: ss
+  - name: Abhishek Kumar
+    id: ak
+  - name: Gubbala Hari Priya
+    id: hp
+  - name: Lakshay Sharma
+    id: ls
+  - name: Sunku Vydehi
+    id: sv
+format:
+  docx:
+    toc: true
+    toc-title: Table of Contents
+    number-sections: true
+    highlight-style: github
+citation: true
+link-citations: true
+bibliography: ref.bib
+---
+
+...
+
+{{< pagebreak >}}
+
+# Executive Summary
+
+Our analysis involves the single-year data of the 2023 Women's Ice Hockey World Championship. We will address the individual player performance with linear regression and identify the key attributes affecting the performance.
+
+{{< pagebreak >}}
+
+# **Problem Statement**
+
+Comprehensive sports analytics are essential for teams and athletes to make data-informed decisions and optimize performance. Furthermore, a rich source of information can significantly boost fan loyalty. In women's ice hockey, the publicly available data is limited in how important the attribute is for the player's performance. Moreover, a tidy dataset is not currently available. Hence, we wish to examine the player statistics of the participants in the 2023 Women's Ice Hockey World Championship and identify the key performance indicators.
+
+{{< pagebreak >}}
+
+# **Proposed Solution**
+
+We will compile a tidy dataset using publicly available data from the 2023 Women's Ice Hockey World Championship. Furthermore, we will perform regression analysis to identify the dependence of the individual variables on the player's performance. We expect to derive critical insights that could have implications for team strategizing. The insights will also help ice hockey fans understand their favorite players better.
+
+The attributes of the data collected are as follows
+
+|     |                             |                                                                                                                |
+|---------------|-----------------------------|-----------------------------|
+| No. | Attribute                   | Description                                                                                                    |
+|     | **Dependent variable**      |                                                                                                                |
+| 1   | Points/Game                 | Average of points scored across all the games played.                                                          |
+|     | **Independent variables**   |                                                                                                                |
+| 2   | Position                    | Player-position: Forwards or Defensemen (Goalies are ignored since their performance metrics are different)    |
+| 3   | Goals                       |                                                                                                                |
+| 4   | Assist                      | Goals that were assisted by focal player                                                                       |
+| 5   | Country                     | Team played under                                                                                              |
+| 6   | Games played                | Total games played by the player in the current season.                                                        |
+| 7   | Height                      | In cms                                                                                                         |
+| 8   | Weight                      | In Kg                                                                                                          |
+| 9   | Penalties in minutes        | Penalty duration over the championship                                                                         |
+| 10  | +/- Plus/minus              | Player's goal differential while they are on the ice                                                           |
+| 11  | Shots on goal(SOG)          | The number of attempts made by a player to score a goal that directly challenge the opposing team's goaltender |
+| 12  | Age                         |                                                                                                                |
+| 13  | Shoots (left or right)      | Player handedness                                                                                              |
+| 14  | Total minutes/s played (TM) | Total player time on ice                                                                                       |
+
+Our choice of points for the dependent variable covers a player's ability to score and the team spirit assisting their teammates in scoring. As a game, hockey uses points for ranking purposes, reinforcing our choice. The remaining independent variables were picked from the player parameters available.
+
+We will use the following data sources:
+
+-   QuantHockey Website[@noauthor_iihf_nodate]
+
+-   IIHF Official Website[@noauthor_iihf_nodate-1]
+
+for the data.
+
+## Limitations
+
+We foresee two limitations of the dataset, which should be accounted for in the analysis.
+
+1.  Small sample size compared to other tournaments
+
+2.  The tournament had two parts. 1st part was a group stage and 2nd a knockout competition, giving more match time and the opportunity to score more points for qualified teams.
+
+{{< pagebreak >}}
+
+# Timeline
+
+The anticipated time frame for the project tasks is as follows.
+
+|                          |                    |
+|--------------------------|--------------------|
+| Task                     | Due Date           |
+| Finalize Data Collection | 5th September 2023 |
+| Mid Term Review          | 4th October 2023   |
+| Final Submission         | 29th November 2023 |
+
+{{< pagebreak >}}
+
+# References
