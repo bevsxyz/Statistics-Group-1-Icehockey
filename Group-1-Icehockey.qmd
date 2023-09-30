@@ -35,7 +35,9 @@ bibliography: ref.bib
 
 # Executive Summary
 
-Ice hockey is a fast-paced team sport renowned for its combination of speed, physicality, and skill, predominantly played in cold-weather nations like Canada, the USA, Russia, Sweden, and Finland. Women's ice hockey, a variant of the sport played exclusively by female athletes, shares similarities with men's hockey but boasts its distinct history. Since 1990, the International Ice Hockey Federation (IIHF) has organized the IIHF World Women\'s Championship, showcasing the growth of women's ice hockey.
+Ice hockey is a fast-paced team sport renowned for its combination of speed, physicality, and skill, predominantly played in cold-weather nations like Canada, the USA, Russia, Sweden, and Finland. Women's ice hockey, a variant of the sport played exclusively by female athletes, shares similarities with men's hockey but boasts its distinct history. Since 1990, the International Ice Hockey Federation (IIHF) has organized the IIHF World Women's Championship, showcasing the growth of women's ice hockey. 
+
+The USA took the championship in the current year, with Canada coming in second. Since the inception of the competition, they have been regularly among the winners. The first eight championships were won by Canada, whereas the United States dominated in the more recent editions, taking home ten out of the last 14 championships. (IIHF World Women's Championship, n.d.). 
 
 The main objective in ice hockey is to score goals by shooting a puck into the opposing team's net. A standard game comprises three periods, each lasting 20 minutes, with intermissions for player rest and ice maintenance. Victory goes to the team with the most goals after these three periods.
 
@@ -43,19 +45,19 @@ In a typical lineup, each team fields six players simultaneously on the ice, fea
 
 To maintain fairness and uphold the competitive spirit of the game, ice hockey employs an extensive set of rules and penalties. Players who commit infractions can be temporarily sidelined in the penalty box, leading to power plays (when one team has more players on the ice) or penalty kills (when a team is shorthanded). These regulations play a crucial role in preserving the integrity of the sport.
 
-Our analysis involves the single-year data of the 2023 IIHF World Women\'s Championship. We will address the individual player performance with linear regression and identify the key attributes affecting the performance.
+Our analysis involves the single-year data of the 2023 IIHF World Women's Championship. We will address the individual player performance with linear regression and identify the key attributes affecting the performance.
 
 {{< pagebreak >}}
 
 # **Problem Statement**
 
-### What are the critical factors predicting a player's performance?
+## **What are the critical factors predicting a player's performance?**
 
 The challenge is to systematically identify and analyze the key factors that reliably predict a player's performance. This includes analyzing the physical, skill-based, psychological, and strategic elements that contribute to a player's effectiveness in the game. There is a need for a framework that allows coaches, teams, and players to make data-driven decisions and improve the overall competitive edge in the sport.
 
 For this study, we only looked at the official data on the physical and game statistics of 203 forwards and defenders. The rationale behind the decision to exclude goalies from our dataset stems from the disparity in their performance metrics with forwards and defenders.
 
-In women's ice hockey, the publicly available data is limited in terms of how important the attribute is for the players' performance. Furthermore, there is currently no tidy dataset available. So, we are collecting and putting together information from official documents and extending it. We also want to look at the player statistics of the participants in the 2023 Women's Ice Hockey World Championship and identify the key performance indicators for high-performing players
+In women's ice hockey, the publicly available data is limited in terms of how important the attribute is for the players' performance. Furthermore, there is currently no tidy dataset available. So, we are collecting and putting together information from official documents and extending it. We also want to look at the player statistics of the participants in the 2023 Women's Ice Hockey World Championship and identify the key performance indicators for high-performing players.
 
 {{< pagebreak >}}
 
@@ -66,7 +68,7 @@ We will compile a tidy dataset using publicly available data from the 2023 Women
 The attributes of the data collected are as follows
 
 |     |                             |                                                                                                                |
-|---------------|-----------------------------|-----------------------------|
+|------------------|---------------------------|---------------------------|
 | No. | Attribute                   | Description                                                                                                    |
 |     | **Dependent variable**      |                                                                                                                |
 | 1   | Points/Game                 | Average of points scored across all the games played.                                                          |
@@ -87,13 +89,37 @@ The attributes of the data collected are as follows
 
 Our choice of points for the dependent variable covers a player's ability to score and the team spirit assisting their teammates in scoring. As a game, hockey uses points for ranking purposes, reinforcing our choice. The remaining independent variables were picked from the player parameters available.
 
-We will use the following data sources:
+## Variable Significance
 
--   QuantHockey Website[@noauthor_iihf_nodate]
+We can group the things that affect how a player plays a game into different categories.
 
--   IIHF Official Website[@noauthor_iihf_nodate-1]
+### Individual Characteristics
 
-for the data.
+The individual player possesses distinct characteristics such as height, weight, age, position, and player handedness (shooting). Since they could affect individual performance, they would be useful for our model.
+
+### Performance Characteristics
+
+Resulting from the players' participation in the championship are variables pertaining to the outcome of their participation. Goals, assists, games played, penalties in minutes, +/- differential, shots on goals, and total minutes played are performance variables. The average of total goals scored with assists is our dependent variable. The remaining variables indicate how the players' time on the ice was spent.
+
+Finally, the variable country groups the players with their teammates. Ice hockey being a team sport, the player's performance is linked to their teammates. Therefore, we could use it to assess the player performance distribution within the team.
+
+We will use the following data sources for the data.
+
+|         |                       |                                                                                                       |
+|---------|-----------------------|-------------------------------------------------------------------------------------------------------|
+| Sr. no. | Data                  | Source                                                                                                |
+| 1       | Quant hockey Website  | [Quant hockey website Hyperlink](https://www.iihf.com/en/events/2023/ww/teamstats/scoringefficiency)  |
+| 2       | IIHF Official Website | [IIHF Official Website Hyperlink](https://www.iihf.com/en/events/2023/ww/teamstats/scoringefficiency) |
+| 3       | Team USA              | [IIHF Team USA - Data Hyperlink](https://www.iihf.com/pdf/498/ihw4980usa_83_8_0)                      |
+| 4       | Team Japan            | [IIHF Team Japan - Data Hyperlink](https://www.iihf.com/pdf/498/ihw4980jpn_83_7_0)                    |
+| 5       | Team Canada           | [IIHF Team Canada - Data Hyperlink](https://www.iihf.com/pdf/498/ihw4980can_83_8_0)                   |
+| 6       | Team Switzerland      | [IIHF Team Switzerland - Data Hyperlink](https://www.iihf.com/pdf/498/ihw4980sui_83_9_0)              |
+| 7       | Team Czech Republic   | [IIHF Czech Republic - Data Hyperlink](https://www.iihf.com/pdf/498/ihw4980cze_83_8_0)                |
+| 8       | Team France           | [IIHF France - Data Hyperlink](https://www.iihf.com/pdf/498/ihw4980fra_83_4_0)                        |
+| 9       | Team Finland          | [IIHF Finland - Data Hyperlink](https://www.iihf.com/pdf/498/ihw4980fin_83_7_0)                       |
+| 10      | Team Germany          | [IIHF Germany - Data Hyperlink](https://www.iihf.com/pdf/498/ihw4980ger_83_6_0)                       |
+| 11      | Team Sweden           | [IIHF Sweden - Data Hyperlink](https://www.iihf.com/pdf/498/ihw4980swe_83_9_0)                        |
+| 12      | Team Hungary          | [IIHF Hungary  - Data Hyperlink](https://www.iihf.com/pdf/498/ihw4980hun_83_6_0)                      |
 
 ## Limitations
 
@@ -113,7 +139,7 @@ The anticipated time frame for the project tasks is as follows.
 |--------------------------|--------------------|
 | Task                     | Due Date           |
 | Finalize Data Collection | 5th September 2023 |
-| Mid Term Review          | 4th October 2023   |
+| Mid Term Review          | 3rd October 2023   |
 | Final Submission         | 29th November 2023 |
 
 {{< pagebreak >}}
