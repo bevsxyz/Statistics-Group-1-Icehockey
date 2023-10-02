@@ -47,7 +47,7 @@ To maintain fairness and uphold the competitive spirit of the game, ice hockey e
 
 Our analysis involves the single-year data of the 2023 IIHF World Women's Championship. We will address the individual player performance with linear regression and identify the key attributes affecting the performance.
 
-{{< pagebreak >}}
+![[@BasicIceHockey]](img/Ice_hockey_layout.jpg){width="500"}
 
 # **Problem Statement**
 
@@ -65,7 +65,9 @@ In women's ice hockey, the publicly available data is limited in terms of how im
 
 We will compile a tidy dataset using publicly available data from the 2023 Women's Ice Hockey World Championship. Furthermore, we will perform regression analysis to identify the dependence of the individual variables on the player's performance. We expect to derive critical insights that could have implications for team strategizing. The insights will also help ice hockey fans understand their favorite players better.
 
-The attributes of the data collected are as follows
+The attributes of the data[^1] collected are as follows
+
+[^1]: The dataset is provided in [data.csv](data.csv)
 
 |     |                             |                                                                                                                |
 |------------------|---------------------------|---------------------------|
