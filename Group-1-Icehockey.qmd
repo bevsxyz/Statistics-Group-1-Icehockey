@@ -145,4 +145,107 @@ The anticipated time frame for the project tasks is as follows.
 
 {{< pagebreak >}}
 
+# Analysis
+
+Points per game is our dependent variable. Hence, it would be prudent to avoid goals and assists the independent variables from which it is calculate.
+
+```{r}
+#| echo: false
+# Load tidyverse and read data
+library(tidyverse)
+# Read and tidy data
+df = read_csv("data.csv")
+```
+
+```{r}
+str(df)
+```
+
+We can see that there are 4 categorical variables, 11 doubles, and one time. We can convert time to seconds.
+
+```{r}
+df = df |> select(!c(goals_g, assists_a, points)) # Drop since they are related to the dependent variable
+df = df |>  mutate(total_minutes_as_duration =
+                     as.numeric(total_minutes_as_duration, unit="secs")) |> 
+  rename(avg_points = points_per_game_ppg,
+         penalty_dur = penalties_in_minutes_pim,
+         duration = total_minutes_as_duration,
+         g_diff = plus_minus_goal_differential,
+         sog = shots_on_goal_sog)
+```
+
+Now we will encode the categorical variables encoding for country, position, and shoot.
+
+```{r}
+df = df |> mutate(value = 1) |>
+  pivot_wider(names_from = country,
+              values_from = value,
+              values_fill = 0) |>
+  mutate(position = case_match(position,
+                               "D" ~ 0,
+                               "F" ~ 1),
+         shoot = case_match(shoot,
+                            "L" ~ 0,
+                            "R" ~ 1))
+```
+
+```{r}
+
+df.num = df |>  select(where(is.numeric)) # correlation can only be done on numeric
+```
+
+```{r}
+df.corr = df.num |>  cor()
+# Remove the upper triangular matrix
+upperm =upper.tri(df.corr,diag = T)
+df.corr[upperm] = NA
+as_tibble(df.corr[,"avg_points"],rownames = "var") |> arrange(desc(value))
+```
+
+```{r}
+#| echo: false
+# Convert the matrix output to tibble dataframe
+mrows = rownames(df.corr)
+df.corr = df.corr |>  as_tibble(rownames = "var_1")|> gather(key="var_2", value="cor", -1) |> drop_na()
+```
+
+```{r}
+# Plot correlation heatmap
+ggplot(df.corr,aes(var_1, var_2, fill= cor,label=round(cor,2))) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+    geom_tile() + ylim(mrows) + xlim(rev(mrows)) +
+  geom_text(aes(colour="white"))
+```
+
+We will drop one of the independent variable pairs having absolute value of correlation above 0.7.
+
+```{r}
+df.corr = df.corr |> filter(!is.na(cor))
+df.corr.chosen.num = df.corr |> filter(case_when(
+  var_2 != "points_per_game_ppg" ~ abs(cor) < 0.7,
+  TRUE ~ FALSE
+))
+```
+
+```{r}
+df.corr.chosen.num
+```
+
+```{r}
+ggplot(df.corr.chosen.num,aes(var_1, var_2, fill= cor,label=round(cor,2))) +
+    geom_tile() +
+  geom_text(aes(colour="white")) +
+  ylim(mrows) + xlim(rev(mrows)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+```{r}
+df.corr.chosen.num |> distinct(var_1)
+```
+
+```{r}
+df.num
+
+```
+
 # References
