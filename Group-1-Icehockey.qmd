@@ -219,6 +219,8 @@ df |> select(where(is.numeric)) |>
   gather(yvar, val,-avg_points) |>
   ggplot(aes(val, avg_points)) +
   geom_point() +
+  stat_smooth(method = "lm",
+              geom = "smooth") +
   facet_wrap(yvar ~ ., ncol = 2, scales = "free_x")
 ```
 
