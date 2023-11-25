@@ -206,18 +206,22 @@ df |> summarise(across(
 
 ```{r}
 # Calculate correlation matrix
-df.corr = df |>  select(where(is.numeric)) |>  cor()
-# Convert the matrix output to tibble dataframe
-mrows = rownames(df.corr)
-df.corr = df.corr |>
-  as_tibble(rownames = "var_1") |>
-  gather(key = "var_2", value =
-           "cor", -1) |> drop_na()
+df.corr <- function(df) {
+  df = df |>  select(where(is.numeric)) |>  cor()
+  mrows = rownames(df)
+  # Convert the matrix output to tibble dataframe
+  
+  df = df |>
+    as_tibble(rownames = "var_1") |>
+    gather(key = "var_2", value =
+             "cor",-1) |> drop_na()
+  return(df)
+}
 ```
 
 ```{r}
 # Plot correlation heatmap
-ggplot(df.corr, aes(var_1, var_2, fill = cor, label = round(cor, 2))) +
+ggplot(df.corr(df), aes(var_1, var_2, fill = cor, label = round(cor, 2))) +
   theme(axis.text.x = element_text(
     angle = 90,
     vjust = 0.5,
@@ -265,7 +269,7 @@ df |> select(avg_points, duration) |>
 
 ```{r}
 # Plot correlation heatmap
-ggplot(df.corr, aes(var_1, var_2, fill = cor, label = round(cor, 2))) +
+ggplot(df.corr(df), aes(var_1, var_2, fill = cor, label = round(cor, 2))) +
   theme(axis.text.x = element_text(
     angle = 90,
     vjust = 0.5,
@@ -287,7 +291,7 @@ df |> select(-where(is.numeric), -Name, avg_points) |>
 ```{r}
 nullModel = lm(avg_points ~ 1, data=df)
 # the largest model we will accept
-fullModel = lm(avg_points ~ .,data=df |> select(-Name))
+fullModel = lm(avg_points ~.-country,data=df |> select(-Name))
 model = step(fullModel,scope=list(lower=nullModel, upper=fullModel),
                   direction="both")
 ```
@@ -299,15 +303,19 @@ summary(model)
 ```{r}
 model_residual = fortify(model)
 model_residual |>
-  ggplot(aes(x=.fitted, y=.resid)) +  geom_point() +
-  geom_hline(yintercept = 0) +    geom_smooth(se = FALSE) +
-   labs(x="Fitted Values", y="Residuals") +
-  facet_wrap(country ~ .)
+  ggplot(aes(x = .fitted, y = .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_smooth(se = FALSE) +
+  labs(x = "Fitted Values", y = "Residuals") +
+  facet_wrap(country ~ shoot)
 ```
 
 ```{r}
 model_residual |> 
-  ggplot(aes(sample=.stdresid)) + stat_qq() + geom_abline()
+  ggplot(aes(sample=.stdresid)) +
+  stat_qq() +
+  geom_abline()
 ```
 
 # References
