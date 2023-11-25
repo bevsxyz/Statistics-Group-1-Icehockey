@@ -296,4 +296,18 @@ model = step(fullModel,scope=list(lower=nullModel, upper=fullModel),
 summary(model)
 ```
 
+```{r}
+model_residual = fortify(model)
+model_residual |>
+  ggplot(aes(x=.fitted, y=.resid)) +  geom_point() +
+  geom_hline(yintercept = 0) +    geom_smooth(se = FALSE) +
+   labs(x="Fitted Values", y="Residuals") +
+  facet_wrap(country ~ .)
+```
+
+```{r}
+model_residual |> 
+  ggplot(aes(sample=.stdresid)) + stat_qq() + geom_abline()
+```
+
 # References
