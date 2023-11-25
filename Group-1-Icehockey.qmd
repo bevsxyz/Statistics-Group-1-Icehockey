@@ -164,7 +164,7 @@ str(df)
 We can see that there are 4 categorical variables, 11 doubles, and one time. We can convert time to seconds.
 
 ```{r}
-df = df |> select(!c(goals_g, assists_a, points)) # Drop since they are related to the dependent variable
+df = df |> select(!c(games_played_gp,goals_g, assists_a, points)) # Drop since they are related to the dependent variable
 df = df |>  mutate(total_minutes_as_duration =
                      as.numeric(total_minutes_as_duration, unit = "secs")) |>
   rename(
@@ -178,11 +178,10 @@ df = df |>  mutate(total_minutes_as_duration =
 
 ```{r}
 
-df.num = df |>  select(where(is.numeric)) # correlation can only be done on numeric
 ```
 
 ```{r}
-df.corr = df.num |>  cor()
+df.corr = df |>  select(where(is.numeric)) |>  cor()
 # Remove the upper triangular matrix
 # upperm =upper.tri(df.corr,diag = T)
 # df.corr[upperm] = NA
@@ -219,9 +218,36 @@ df |> select(where(is.numeric)) |>
   gather(yvar, val,-avg_points) |>
   ggplot(aes(val, avg_points)) +
   geom_point() +
-  stat_smooth(method = "lm",
-              geom = "smooth") +
+  stat_smooth(geom = "smooth") +
   facet_wrap(yvar ~ ., ncol = 2, scales = "free_x")
+```
+
+```{r}
+df |> select(Name,country, duration) |>  filter(duration == max(duration))
+```
+
+```{r}
+df = df |> mutate(duration = replace(duration, Name == "Emma Ingold", as.numeric(
+  as.difftime("01:30:24", format = "%H:%M:%S", units = "secs")
+)))
+df |> select(where(is.numeric)) |>
+  gather(yvar, val, -avg_points) |>
+  ggplot(aes(val, avg_points)) +
+  geom_point() +
+  stat_smooth(geom = "smooth") +
+  facet_wrap(yvar ~ ., ncol = 2, scales = "free_x")
+```
+
+```{r}
+# Plot correlation heatmap
+ggplot(df.corr, aes(var_1, var_2, fill = cor, label = round(cor, 2))) +
+  theme(axis.text.x = element_text(
+    angle = 90,
+    vjust = 0.5,
+    hjust = 1
+  )) +
+  geom_tile() + ylim(mrows) + xlim(rev(mrows)) +
+  geom_text(aes(colour = "white"))
 ```
 
 ```{r fig.height=10}
@@ -261,11 +287,22 @@ df |> select(avg_points, duration, penalty_dur) |>
 ```
 
 ```{r}
-
+nullModel = lm(avg_points ~ 1, data=df)
+# the largest model we will accept
+fullModel = lm(avg_points ~ .,data=df |> select(-Name))#country+position+shoot+height+penalty_dur+age+weight+sog+g_diff+duration, data=df)
+model = step(fullModel,scope=list(lower=nullModel, upper=fullModel),
+                  direction="both")
 ```
 
 ```{r}
+summary(lm(avg_points ~ country+position+shoot+weight+sog+g_diff+duration, data=df))
+```
 
+```{r}
+summary(model)
+```
+
+```{r}
 ```
 
 # References
