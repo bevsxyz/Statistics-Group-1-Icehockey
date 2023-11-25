@@ -213,7 +213,7 @@ df |> summarise(across(
 # Calculate correlation matrix
 df.corr <- function(df) {
   df = df |>  select(where(is.numeric)) |>  cor()
-  mrows = rownames(df)
+  mrows <<- rownames(df)
   # Convert the matrix output to tibble dataframe
   
   df = df |>
@@ -306,7 +306,7 @@ We initiate the analysis by creating a null model and determining the largest mo
 ```{r}
 nullModel = lm(avg_points ~ 1, data=df)
 # the largest model we will accept
-fullModel = lm(avg_points ~.-country,data=df |> select(-Name))
+fullModel = lm(avg_points ~.,data=df |> select(-Name))
 model = step(fullModel,scope=list(lower=nullModel, upper=fullModel),
                   direction="both")
 ```
@@ -327,7 +327,7 @@ model_residual |>
   geom_hline(yintercept = 0) +
   geom_smooth(se = FALSE) +
   labs(x = "Fitted Values", y = "Residuals") +
-  facet_wrap(country ~ shoot)
+  facet_wrap(country ~ .)
 ```
 
 The residual analysis ensures that the model assumptions are met.
