@@ -149,7 +149,10 @@ The anticipated time frame for the project tasks is as follows.
 
 ## Exploratory Data Analysis
 
-Points per game is our dependent variable. Hence, it would be prudent to avoid goals and assists the independent variables from which it is calculate.
+In this section, we conduct an exploratory data analysis (EDA) to
+understand the distribution and relationships within our dataset. Our
+dependent variable of interest is "Points per Game" (avg_points), and we
+aim to identify key factors influencing this variable.
 
 ```{r}
 #| echo: false
@@ -165,7 +168,9 @@ We will check the data type of all the variables to get an idea of our data.
 str(df)
 ```
 
-We can see that there are 4 categorical variables, 11 doubles, and one time duration. We can convert time to seconds. We also will remove the variables from which we had calculated our dependent variable, i.e, no. of games played, goals, assists, and points.
+The dataset contains 4 categorical variables, 11 numeric variables, and
+one time duration variable. We convert the time variable to seconds and
+remove variables related to the dependent variable.
 
 ```{r}
 # Drop since they are related to the dependent variable
@@ -183,7 +188,7 @@ df = df |>  mutate(total_minutes_as_duration =
   )
 ```
 
-We will now get a statistical summary of all the variables, to get an idea of our variable distribution.
+Next, we generate a statistical summary of all variables to explore their distribution.
 
 ```{r}
 df |> summarise(across(
@@ -217,9 +222,7 @@ df.corr <- function(df) {
              "cor",-1) |> drop_na()
   return(df)
 }
-```
 
-```{r}
 # Plot correlation heatmap
 ggplot(df.corr(df), aes(var_1, var_2, fill = cor, label = round(cor, 2))) +
   theme(axis.text.x = element_text(
@@ -229,12 +232,11 @@ ggplot(df.corr(df), aes(var_1, var_2, fill = cor, label = round(cor, 2))) +
   )) +
   geom_tile() + ylim(mrows) + xlim(rev(mrows)) +
   geom_text(aes(colour = "white"))
-
 ```
 
-We do not have any pairs having multicollinearity. Hence, we can move ahead with our features.
+The absence of pairs with multicollinearity allows us to proceed with our features.
 
-We will now use smoothening to find the optimal curve in xy scatter plot of the dependent variable with each independent variable.
+We employ smoothing to find the optimal curve in the xy scatter plot of the dependent variable with each independent variable.
 
 ```{r fig.height=20}
 df |> select(where(is.numeric)) |>
@@ -245,13 +247,16 @@ df |> select(where(is.numeric)) |>
   facet_wrap(yvar ~ ., ncol = 2, scales = "free_x")
 ```
 
-We can see that graphically all the variables except duration has approximately linear relationship with average points. In the case of duration we have an outlier that is causing the relationship to deviate from linear. We went back to the source to check the datapoint. Here we found that the outlier was due to human error.
+Graphically, all variables, except duration, exhibit an approximately
+linear relationship with average points. However, the presence of an
+outlier in duration causes a deviation from linearity. Upon
+investigation, we identify the outlier as a result of human error.
 
 ```{r}
 df |> select(Name,country, duration) |>  filter(duration == max(duration))
 ```
 
-We will fix the outlier and check the linear relationship again.
+To address the outlier, we correct the duration and reevaluate the linear relationship.
 
 ```{r}
 df = df |> mutate(duration = replace(duration,
@@ -266,6 +271,10 @@ df |> select(avg_points, duration) |>
   geom_point() +
   stat_smooth(geom = "smooth")
 ```
+
+The linear relationship is now more apparent after fixing the outlier in the duration variable.
+
+We conduct a final check of the correlation matrix and boxplots to ensure data quality and consistency.
 
 ```{r}
 # Plot correlation heatmap
@@ -288,6 +297,12 @@ df |> select(-where(is.numeric), -Name, avg_points) |>
   theme(legend.position = "none")
 ```
 
+The data appears to be in good shape, and we can proceed to build a regression model.
+
+## Regression Analysis
+
+We initiate the analysis by creating a null model and determining the largest model we will accept.
+
 ```{r}
 nullModel = lm(avg_points ~ 1, data=df)
 # the largest model we will accept
@@ -296,9 +311,13 @@ model = step(fullModel,scope=list(lower=nullModel, upper=fullModel),
                   direction="both")
 ```
 
+We then summarize the regression model.
+
 ```{r}
 summary(model)
 ```
+
+Following the model fitting, we assess the residuals for model validation.
 
 ```{r}
 model_residual = fortify(model)
@@ -311,11 +330,18 @@ model_residual |>
   facet_wrap(country ~ shoot)
 ```
 
+The residual analysis ensures that the model assumptions are met.
+Additionally, we check the normality of residuals using a QQ plot.
+
 ```{r}
 model_residual |> 
   ggplot(aes(sample=.stdresid)) +
   stat_qq() +
   geom_abline()
 ```
+
+The QQ plot confirms the normal distribution of residuals. The
+regression analysis provides insights into the relationships between
+variables and their impact on average points in women's ice hockey.
 
 # References
