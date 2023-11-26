@@ -166,7 +166,7 @@ df = read_csv("data.csv")
 To get an idea of our data, we will check the data type of the variables.
 
 ```{r}
-#| label: datatypes
+#| label: tbl-datatypes
 #| tbl-cap: The count of different data types read.
 df |> map_chr(type_sum) |>
   as_tibble_row() |>
@@ -196,7 +196,7 @@ df = df |>  mutate(total_minutes_as_duration =
 Subsequently, we generate a statistical summary of all variables to examine their distribution.
 
 ```{r}
-#| label: stat-summary
+#| label: tbl-stat-summary
 #| echo: false
 #| tbl-cap: "Statistical Summary of Numerical Columns"
 #| tbl-colwidths: [60,40]
@@ -264,7 +264,7 @@ The relationships between the variables are reflected in the correlation matrix.
 We will now explore the DV-IV relationships in greater detail. In the XY scatter plot of the dependent variable with each independent variable, we use smoothing to find the best curve. This would enable us to conduct a visual analysis of the linearity of the relationship.
 
 ```{r}
-#| label: scatter-1
+#| label: fig-scatter-1
 #| fig-cap: "The figure shows the relationship between the each numeric independent variable with the dependent variable average points."
 #| fig-width: 10
 #| fig-height: 10
@@ -282,6 +282,7 @@ df |> select(where(is.numeric)) |>
 All variables, except duration, have an approximately linear relationship with average points. The occurrence of an outlier in the duration results in a significant deviation from linearity. After further investigation, we conclude that the anomaly is the result of human error in data collection.
 
 ```{r}
+#| label: tbl-outlier
 df |> select(Name, country, duration) |>
   filter(duration == max(duration)) |>
   kable()
@@ -290,7 +291,7 @@ df |> select(Name, country, duration) |>
 To address the anomaly, we rectify the duration for Emma Ingold and reassess the linear correlation between the duration and the dependent variable.
 
 ```{r}
-#| label: replace-outlier
+#| label: fig-replace-outlier
 #| fig-cap: Duration vs Average Points scatter plot after replacing the outlier.
 df = df |> mutate(duration = replace(duration,
                                      Name == "Emma Ingold",
@@ -311,7 +312,7 @@ After fixing the outlier in the duration variable, the linear relationship becom
 Data quality and consistency are ensured by a final check of the correlation matrix and box plots.
 
 ```{r}
-#| label: corr-2
+#| label: fig-corr-2
 #| fig-width: 8
 #| fig-height: 8
 #| fig-cap: "Correlation Matrix after fixing the outlier"
@@ -322,7 +323,7 @@ plot.corr(df)
 We can see that fixing the outlier increased the correlation between the duration and average points from 0.09 to 0.53. This increase may prove advantageous to our modeling efforts.
 
 ```{r}
-#| label: boxplot-1
+#| label: fig-boxplot-1
 #| fig-cap: "The figure illustrates the connection between the categorical independent variables and the dependent variable's average points via box plots. Of the three IVs, country, position, and shoot, country seems to be the most informative."
 #| fig-width: 15
 #| fig-height: 10
@@ -402,7 +403,7 @@ model_residual_final |>
 ```
 
 ```{r}
-#| label: redsidual-facet
+#| label: fig-redsidual-facet
 #| warning: false
 #| fig-width: 10
 #| fig-height: 10
@@ -418,7 +419,7 @@ model_residual[[1]] |>
 The residual analysis ensures that the model assumptions are met. Additionally, we check the normality of residuals using a QQ plot.
 
 ```{r}
-#| label: qq-facet
+#| label: fig-qq-facet
 #| warning: false
 #| fig-width: 10
 #| fig-height: 10
@@ -432,6 +433,7 @@ model_residual_final |>
 The QQ plot confirms the normal distribution of residuals. The regression analysis provides insights into the relationships between variables and their impact on average points in women's ice hockey
 
 ```{r}
+#| label: tbl-spcor
 ppcor::spcor(df |> select_if(is.numeric), method = "pearson")$estimate |>
   as_tibble(rownames="rowname") |> 
   filter(rowname == "avg_points") |>  select("g_diff","sog","duration") |> kable()
