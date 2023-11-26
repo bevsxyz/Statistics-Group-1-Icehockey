@@ -252,7 +252,7 @@ plot.corr <- function(df){
 ```
 
 ```{r}
-#| label: corr-1
+#| label: fig-corr-1
 #| fig-width: 8
 #| fig-height: 8
 #| fig-cap: "Correlation Matrix of all the Variables"
