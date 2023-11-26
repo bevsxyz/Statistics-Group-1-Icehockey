@@ -169,7 +169,7 @@ We will check the data type of all the variables to get an idea of our data.
 df |> map_chr(type_sum) |>
   as_tibble_row() |>
   pivot_longer(everything()) |>
-  count(value)
+  count(value) |> kable()
 ```
 
 \
@@ -320,7 +320,7 @@ plot.corr(df)
 ```{r}
 #| label: boxplot-1
 #| fig-cap: "The figure shows the relationship between the each categorical independent variable with the dependent variable average points with boxplots."
-#| fig-width: 10
+#| fig-width: 15
 #| fig-height: 10
 #| warning: false
 df |> select(-where(is.numeric), -Name, avg_points) |>
@@ -351,7 +351,7 @@ fullModel2 = lm(avg_points ~.^2,data=df |> select(-Name)) # All variables with a
 We then summarize the regression model.
 
 ```{r}
-#| echo: false
+#| output: false
 #| warning: false
 model = lapply(list(fullModel, fullModel1, fullModel2), function(x)
   step(
