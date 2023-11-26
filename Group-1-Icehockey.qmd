@@ -23,7 +23,7 @@ format:
     toc: true
     toc-title: Table of Contents
     number-sections: true
-    highlight-style: github
+    highlight-style: atom-one
 citation: true
 link-citations: true
 bibliography: ref.bib
@@ -149,15 +149,14 @@ The anticipated time frame for the project tasks is as follows.
 
 ## Exploratory Data Analysis
 
-In this section, we conduct an exploratory data analysis (EDA) to
-understand the distribution and relationships within our dataset. Our
-dependent variable of interest is "Points per Game" (avg_points), and we
-aim to identify key factors influencing this variable.
+In this section, we conduct an exploratory data analysis (EDA) to understand the distribution and relationships within our dataset. Our dependent variable of interest is "Points per Game" (avg_points), and we aim to identify key factors influencing this variable.
 
 ```{r}
 #| echo: false
+#| warning: false
 # Load tidyverse and read data
 library(tidyverse)
+library(knitr)
 # Read and tidy data
 df = read_csv("data.csv")
 ```
@@ -165,12 +164,16 @@ df = read_csv("data.csv")
 We will check the data type of all the variables to get an idea of our data.
 
 ```{r}
-str(df)
+#| label: datatypes
+#| tbl-cap: The count of different data types read.
+df |> map_chr(type_sum) |>
+  as_tibble_row() |>
+  pivot_longer(everything()) |>
+  count(value)
 ```
 
-The dataset contains 4 categorical variables, 11 numeric variables, and
-one time duration variable. We convert the time variable to seconds and
-remove variables related to the dependent variable.
+\
+The dataset contains 4 categorical variables, 11 numeric variables, and one time variable. We convert the time variable to seconds. Further, we will also remove variables related to the dependent variable in order to avoid over fitting the linear model to the data.
 
 ```{r}
 # Drop since they are related to the dependent variable
@@ -191,6 +194,10 @@ df = df |>  mutate(total_minutes_as_duration =
 Next, we generate a statistical summary of all variables to explore their distribution.
 
 ```{r}
+#| label: stat-summary
+#| echo: false
+#| tbl-cap: "Statistical Summary of Numerical Columns"
+#| tbl-colwidths: [60,40]
 df |> summarise(across(
   where(is.numeric),
   .names = "{.col}-{.fn}",
@@ -206,10 +213,13 @@ df |> summarise(across(
 )) |>
   pivot_longer(everything(),
                names_sep = '-',
-               names_to = c('variable', '.value'))
+               names_to = c('variable', '.value')) |> 
+  kable()
 ```
 
 ```{r}
+#| label: corr-functions
+#| echo: false
 # Calculate correlation matrix
 df.corr <- function(df) {
   df = df |>  select(where(is.numeric)) |>  cor()
@@ -222,43 +232,64 @@ df.corr <- function(df) {
              "cor",-1) |> drop_na()
   return(df)
 }
+# Correlation Plotting Function
+plot.corr <- function(df){
+  # Plot correlation heatmap
+  ggplot(df.corr(df), aes(var_1, var_2, fill = cor, label = round(cor, 2))) +
+    theme(axis.text.x = element_text(
+      angle = 90,
+      vjust = 0.5,
+      hjust = 1
+    ),
+    axis.title = element_blank(),
+    ) +
+    geom_tile() + ylim(mrows) + xlim(rev(mrows)) +
+    geom_text(color = "white") +
+    labs(fill = "Correlation")
+}
+```
 
-# Plot correlation heatmap
-ggplot(df.corr(df), aes(var_1, var_2, fill = cor, label = round(cor, 2))) +
-  theme(axis.text.x = element_text(
-    angle = 90,
-    vjust = 0.5,
-    hjust = 1
-  )) +
-  geom_tile() + ylim(mrows) + xlim(rev(mrows)) +
-  geom_text(aes(colour = "white"))
+```{r}
+#| label: corr-1
+#| fig-width: 8
+#| fig-height: 8
+#| fig-cap: "Correlation Matrix of all the Variables"
+plot.corr(df)
 ```
 
 The absence of pairs with multicollinearity allows us to proceed with our features.
 
 We employ smoothing to find the optimal curve in the xy scatter plot of the dependent variable with each independent variable.
 
-```{r fig.height=20}
-df |> select(where(is.numeric)) |>
+```{r}
+#| label: scatter-1
+#| fig-cap: "The figure shows the relationship between the each numeric independent variable with the dependent variable average points."
+#| fig-width: 10
+#| fig-height: 10
+#| warning: false
+df |> select(where(is.numeric)) |> filter(avg_points > 0) |>
   gather(yvar, val,-avg_points) |>
   ggplot(aes(val, avg_points)) +
   geom_point() +
   stat_smooth(geom = "smooth") +
-  facet_wrap(yvar ~ ., ncol = 2, scales = "free_x")
+  facet_wrap(yvar ~ ., ncol = 2, scales = "free_x") +
+  labs(x = "Numeric Independent Variables", y = "Average Points(IV)", title =
+         "IV vs DV Scatter Plot")
 ```
 
-Graphically, all variables, except duration, exhibit an approximately
-linear relationship with average points. However, the presence of an
-outlier in duration causes a deviation from linearity. Upon
-investigation, we identify the outlier as a result of human error.
+Graphically, all variables, except duration, exhibit an approximately linear relationship with average points. However, the presence of an outlier in duration causes a deviation from linearity. Upon investigation, we identify the outlier as a result of human error.
 
 ```{r}
-df |> select(Name,country, duration) |>  filter(duration == max(duration))
+df |> select(Name, country, duration) |>
+  filter(duration == max(duration)) |>
+  kable()
 ```
 
-To address the outlier, we correct the duration and reevaluate the linear relationship.
+To address the outlier, we correct the duration for Emma Ingold and reevaluate the linear relationship between duration and the dependent variable.
 
 ```{r}
+#| label: replace-outlier
+#| fig-cap: Duration vs Average Points scatter plot after replacing the outlier.
 df = df |> mutate(duration = replace(duration,
                                      Name == "Emma Ingold",
                                      as.numeric(
@@ -269,7 +300,8 @@ df = df |> mutate(duration = replace(duration,
 df |> select(avg_points, duration) |>
   ggplot(aes(duration, avg_points)) +
   geom_point() +
-  stat_smooth(geom = "smooth")
+  stat_smooth(geom = "smooth") +
+  labs(x="Total Player time in Seconds", y="Average Points(DV)")
 ```
 
 The linear relationship is now more apparent after fixing the outlier in the duration variable.
@@ -277,24 +309,28 @@ The linear relationship is now more apparent after fixing the outlier in the dur
 We conduct a final check of the correlation matrix and boxplots to ensure data quality and consistency.
 
 ```{r}
+#| label: corr-2
+#| fig-width: 8
+#| fig-height: 8
+#| fig-cap: "Correlation Matrix of after correcting the outlier"
 # Plot correlation heatmap
-ggplot(df.corr(df), aes(var_1, var_2, fill = cor, label = round(cor, 2))) +
-  theme(axis.text.x = element_text(
-    angle = 90,
-    vjust = 0.5,
-    hjust = 1
-  )) +
-  geom_tile() + ylim(mrows) + xlim(rev(mrows)) +
-  geom_text(aes(colour = "white"))
+plot.corr(df)
 ```
 
-```{r fig.height=10}
+```{r}
+#| label: boxplot-1
+#| fig-cap: "The figure shows the relationship between the each categorical independent variable with the dependent variable average points with boxplots."
+#| fig-width: 10
+#| fig-height: 10
+#| warning: false
 df |> select(-where(is.numeric), -Name, avg_points) |>
   gather(yvar, val,-avg_points) |>
   ggplot(aes(reorder(val, avg_points), avg_points, fill = val)) +
   geom_boxplot() +
   facet_wrap(yvar ~ ., ncol = 2, scales = "free_x") +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  labs(x = "Categorical Independent Variables", y = "Average Points(IV)", title =
+         "IV vs DV Box Plot")
 ```
 
 The data appears to be in good shape, and we can proceed to build a regression model.
@@ -320,6 +356,9 @@ summary(model)
 Following the model fitting, we assess the residuals for model validation.
 
 ```{r}
+#| warning: false
+#| fig-width: 10
+#| fig-height: 10
 model_residual = fortify(model)
 model_residual |>
   ggplot(aes(x = .fitted, y = .resid)) +
@@ -327,11 +366,28 @@ model_residual |>
   geom_hline(yintercept = 0) +
   geom_smooth(se = FALSE) +
   labs(x = "Fitted Values", y = "Residuals") +
-  facet_wrap(country ~ .)
+  facet_wrap(avg_points==0 ~country)
 ```
 
-The residual analysis ensures that the model assumptions are met.
-Additionally, we check the normality of residuals using a QQ plot.
+```{r}
+model_residual |>
+  ggplot(aes(x = .fitted, y = .resid, color=country)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  labs(x = "Fitted Values", y = "Residuals")
+```
+
+```{r}
+model_residual |>
+  ggplot(aes(x = .fitted, y = .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_smooth(se = FALSE) +
+  labs(x = "Fitted Values", y = "Residuals") +
+  facet_wrap(position ~ .)
+```
+
+The residual analysis ensures that the model assumptions are met. Additionally, we check the normality of residuals using a QQ plot.
 
 ```{r}
 model_residual |> 
@@ -340,8 +396,18 @@ model_residual |>
   geom_abline()
 ```
 
-The QQ plot confirms the normal distribution of residuals. The
-regression analysis provides insights into the relationships between
-variables and their impact on average points in women's ice hockey.
+The QQ plot confirms the normal distribution of residuals. The regression analysis provides insights into the relationships between variables and their impact on average points in women's ice hockey.
+
+```{r}
+library(ppcor)
+# spcor((model_residual |> as_tibble() |> select(.fitted, .resid)))
+```
+
+```{r}
+model_residual |> 
+  ggplot(aes(sample=avg_points)) +
+  stat_qq() +
+  geom_abline()
+```
 
 # References
