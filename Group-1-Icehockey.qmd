@@ -267,7 +267,7 @@ We employ smoothing to find the optimal curve in the xy scatter plot of the depe
 #| fig-width: 10
 #| fig-height: 10
 #| warning: false
-df |> select(where(is.numeric)) |> filter(avg_points > 0) |>
+df |> select(where(is.numeric)) |>
   gather(yvar, val,-avg_points) |>
   ggplot(aes(val, avg_points)) +
   geom_point() +
@@ -340,74 +340,80 @@ The data appears to be in good shape, and we can proceed to build a regression m
 We initiate the analysis by creating a null model and determining the largest model we will accept.
 
 ```{r}
+#| label: mlr
 nullModel = lm(avg_points ~ 1, data=df)
 # the largest model we will accept
-fullModel = lm(avg_points ~.,data=df |> select(-Name))
-model = step(fullModel,scope=list(lower=nullModel, upper=fullModel),
-                  direction="both")
+fullModel = lm(avg_points ~.,data=df |> select(-Name)) # All variables
+fullModel1 = lm(avg_points ~.-position-country-shoot,data=df |> select(-Name)) # All numeric variables
+fullModel2 = lm(avg_points ~.^2,data=df |> select(-Name)) # All variables with all combinations of interaction
 ```
 
 We then summarize the regression model.
 
 ```{r}
-summary(model)
+#| echo: false
+#| warning: false
+model = lapply(list(fullModel, fullModel1, fullModel2), function(x)
+  step(
+    x,
+    scope = list(lower = nullModel, upper = x),
+    direction = "both"
+  ))
+```
+
+```{r}
+#| label: model-summary
+model_residual = lapply(model,fortify)
+lapply(model,summary)
 ```
 
 Following the model fitting, we assess the residuals for model validation.
 
 ```{r}
+#| label: residual-plot
 #| warning: false
 #| fig-width: 10
 #| fig-height: 10
-model_residual = fortify(model)
-model_residual |>
+
+m.res = lapply(model_residual, function(x) x |> select(.fitted, .stdresid))
+model_residual_final = m.res[[1]] |> mutate(model=1) |> add_row(m.res[[2]] |> mutate(model=2)) |> add_row(m.res[[3]] |> mutate(model=3))
+model_residual_final |>
+  ggplot(aes(x = .fitted, y = .stdresid)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  labs(x = "Fitted Values", y = "Residuals", color="Country") +
+  facet_wrap(model~.,ncol = 1 )
+```
+
+```{r}
+#| label: redsidual-facet
+#| warning: false
+#| fig-width: 10
+#| fig-height: 10
+model_residual[[1]] |>
   ggplot(aes(x = .fitted, y = .resid)) +
   geom_point() +
   geom_hline(yintercept = 0) +
   geom_smooth(se = FALSE) +
   labs(x = "Fitted Values", y = "Residuals") +
-  facet_wrap(avg_points==0 ~country)
-```
-
-```{r}
-model_residual |>
-  ggplot(aes(x = .fitted, y = .resid, color=country)) +
-  geom_point() +
-  geom_hline(yintercept = 0) +
-  labs(x = "Fitted Values", y = "Residuals")
-```
-
-```{r}
-model_residual |>
-  ggplot(aes(x = .fitted, y = .resid)) +
-  geom_point() +
-  geom_hline(yintercept = 0) +
-  geom_smooth(se = FALSE) +
-  labs(x = "Fitted Values", y = "Residuals") +
-  facet_wrap(position ~ .)
+  facet_wrap(. ~country, scales = "free_x", ncol = 3)
 ```
 
 The residual analysis ensures that the model assumptions are met. Additionally, we check the normality of residuals using a QQ plot.
 
 ```{r}
-model_residual |> 
+model_residual[[1]] |> 
   ggplot(aes(sample=.stdresid)) +
   stat_qq() +
   geom_abline()
 ```
 
-The QQ plot confirms the normal distribution of residuals. The regression analysis provides insights into the relationships between variables and their impact on average points in women's ice hockey.
+The QQ plot confirms the normal distribution of residuals. The regression analysis provides insights into the relationships between variables and their impact on average points in women's ice hockey
 
 ```{r}
-library(ppcor)
-# spcor((model_residual |> as_tibble() |> select(.fitted, .resid)))
-```
-
-```{r}
-model_residual |> 
-  ggplot(aes(sample=avg_points)) +
-  stat_qq() +
-  geom_abline()
+ppcor::spcor(df |> select_if(is.numeric), method = "pearson")$estimate |>
+  as_tibble(rownames="rowname") |> 
+  filter(rowname == "avg_points") |>  select("g_diff","sog","duration") |> kable()
 ```
 
 # References
