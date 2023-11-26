@@ -22,14 +22,15 @@ format:
   docx:
     toc: true
     toc-title: Table of Contents
+    standalone: true
     number-sections: true
     highlight-style: atom-one
+  pdf:
+    pdf-engine: pdfroff
 citation: true
 link-citations: true
 bibliography: ref.bib
 ---
-
-...
 
 {{< pagebreak >}}
 
@@ -157,11 +158,12 @@ In this section, we conduct an exploratory data analysis (EDA) to understand the
 # Load tidyverse and read data
 library(tidyverse)
 library(knitr)
+library(coefplot)
 # Read and tidy data
 df = read_csv("data.csv")
 ```
 
-We will check the data type of all the variables to get an idea of our data.
+To get an idea of our data, we will check the data type of the variables.
 
 ```{r}
 #| label: datatypes
@@ -173,7 +175,7 @@ df |> map_chr(type_sum) |>
 ```
 
 \
-The dataset contains 4 categorical variables, 11 numeric variables, and one time variable. We convert the time variable to seconds. Further, we will also remove variables related to the dependent variable in order to avoid over fitting the linear model to the data.
+The data set includes four categorical variables, eleven numerical variables, and a unique time-varying variable. The time variable is converted into seconds. Furthermore, we will also eliminate variables related to the dependent variable to avoid overfitting the linear model to the data.
 
 ```{r}
 # Drop since they are related to the dependent variable
@@ -191,7 +193,7 @@ df = df |>  mutate(total_minutes_as_duration =
   )
 ```
 
-Next, we generate a statistical summary of all variables to explore their distribution.
+Subsequently, we generate a statistical summary of all variables to examine their distribution.
 
 ```{r}
 #| label: stat-summary
@@ -257,9 +259,9 @@ plot.corr <- function(df){
 plot.corr(df)
 ```
 
-The absence of pairs with multicollinearity allows us to proceed with our features.
+The relationships between the variables are reflected in the correlation matrix. It is evident that there are no independent variable pairs with an absolute correlation greater than 0.7. Therefore, we can proceed with our features because of the absence of multicollinearity.
 
-We employ smoothing to find the optimal curve in the xy scatter plot of the dependent variable with each independent variable.
+We will now explore the DV-IV relationships in greater detail. In the XY scatter plot of the dependent variable with each independent variable, we use smoothing to find the best curve. This would enable us to conduct a visual analysis of the linearity of the relationship.
 
 ```{r}
 #| label: scatter-1
@@ -277,7 +279,7 @@ df |> select(where(is.numeric)) |>
          "IV vs DV Scatter Plot")
 ```
 
-Graphically, all variables, except duration, exhibit an approximately linear relationship with average points. However, the presence of an outlier in duration causes a deviation from linearity. Upon investigation, we identify the outlier as a result of human error.
+All variables, except duration, have an approximately linear relationship with average points. The occurrence of an outlier in the duration results in a significant deviation from linearity. After further investigation, we conclude that the anomaly is the result of human error in data collection.
 
 ```{r}
 df |> select(Name, country, duration) |>
@@ -285,7 +287,7 @@ df |> select(Name, country, duration) |>
   kable()
 ```
 
-To address the outlier, we correct the duration for Emma Ingold and reevaluate the linear relationship between duration and the dependent variable.
+To address the anomaly, we rectify the duration for Emma Ingold and reassess the linear correlation between the duration and the dependent variable.
 
 ```{r}
 #| label: replace-outlier
@@ -304,9 +306,9 @@ df |> select(avg_points, duration) |>
   labs(x="Total Player time in Seconds", y="Average Points(DV)")
 ```
 
-The linear relationship is now more apparent after fixing the outlier in the duration variable.
+After fixing the outlier in the duration variable, the linear relationship becomes more apparent.
 
-We conduct a final check of the correlation matrix and boxplots to ensure data quality and consistency.
+Data quality and consistency are ensured by a final check of the correlation matrix and box plots.
 
 ```{r}
 #| label: corr-2
@@ -316,6 +318,8 @@ We conduct a final check of the correlation matrix and boxplots to ensure data q
 # Plot correlation heatmap
 plot.corr(df)
 ```
+
+We can see that fixing the outlier increased the correlation between the duration and average points from 0.09 to 0.53. This increase may prove advantageous to our modeling efforts.
 
 ```{r}
 #| label: boxplot-1
@@ -333,11 +337,11 @@ df |> select(-where(is.numeric), -Name, avg_points) |>
          "IV vs DV Box Plot")
 ```
 
-The data appears to be in good shape, and we can proceed to build a regression model.
+The data appears to be in a satisfactory state, and we can proceed with the construction of a regression model.
 
 ## Regression Analysis
 
-We initiate the analysis by creating a null model and determining the largest model we will accept.
+We start by making a model without any data. Then, we choose one that has all the IVs we are studying now. Also, we will make two models: one that doesn't have categories and another that looks at how IVs interact with each other. In the latter scenario, we shall consider all pairwise interactions and second-order terms.
 
 ```{r}
 #| label: mlr
@@ -348,7 +352,7 @@ fullModel1 = lm(avg_points ~.-position-country-shoot,data=df |> select(-Name)) #
 fullModel2 = lm(avg_points ~.^2,data=df |> select(-Name)) # All variables with all combinations of interaction
 ```
 
-We then summarize the regression model.
+We will utilize a vector function to iterate through the models. A stepwise regression strategy that uses both forward selection and backward elimination will be used.
 
 ```{r}
 #| output: false
@@ -364,7 +368,13 @@ model = lapply(list(fullModel, fullModel1, fullModel2), function(x)
 ```{r}
 #| label: model-summary
 model_residual = lapply(model,fortify)
-lapply(model,summary)
+lapply(model,function(x)x$call)
+```
+
+We will now visually check the coefficients. We avoid the final model with interaction as the number of terms is too big to comprehend visually.
+
+```{r}
+multiplot(model[1:2])
 ```
 
 Following the model fitting, we assess the residuals for model validation.
@@ -402,10 +412,15 @@ model_residual[[1]] |>
 The residual analysis ensures that the model assumptions are met. Additionally, we check the normality of residuals using a QQ plot.
 
 ```{r}
-model_residual[[1]] |> 
+#| label: qq-facet
+#| warning: false
+#| fig-width: 10
+#| fig-height: 10
+model_residual_final |> 
   ggplot(aes(sample=.stdresid)) +
   stat_qq() +
-  geom_abline()
+  geom_abline() +
+  facet_wrap(model~.,ncol = 2 )
 ```
 
 The QQ plot confirms the normal distribution of residuals. The regression analysis provides insights into the relationships between variables and their impact on average points in women's ice hockey
