@@ -314,7 +314,7 @@ Data quality and consistency are ensured by a final check of the correlation mat
 #| label: corr-2
 #| fig-width: 8
 #| fig-height: 8
-#| fig-cap: "Correlation Matrix of after correcting the outlier"
+#| fig-cap: "Correlation Matrix after fixing the outlier"
 # Plot correlation heatmap
 plot.corr(df)
 ```
@@ -323,7 +323,7 @@ We can see that fixing the outlier increased the correlation between the duratio
 
 ```{r}
 #| label: boxplot-1
-#| fig-cap: "The figure shows the relationship between the each categorical independent variable with the dependent variable average points with boxplots."
+#| fig-cap: "The figure illustrates the connection between the categorical independent variables and the dependent variable's average points via box plots. Of the three IVs, country, position, and shoot, country seems to be the most informative."
 #| fig-width: 15
 #| fig-height: 10
 #| warning: false
@@ -341,7 +341,7 @@ The data appears to be in a satisfactory state, and we can proceed with the cons
 
 ## Regression Analysis
 
-We start by making a model without any data. Then, we choose one that has all the IVs we are studying now. Also, we will make two models: one that doesn't have categories and another that looks at how IVs interact with each other. In the latter scenario, we shall consider all pairwise interactions and second-order terms.
+We start by making a model without any data. Then, we choose one that has all the IVs we are studying now\[1\]. Also, we will make two models: one that doesn't have categories\[2\] and another that looks at how IVs interact with each other\[3\]. In the latter scenario, we shall consider all pairwise interactions and second-order terms.
 
 ```{r}
 #| label: mlr
@@ -371,16 +371,21 @@ model_residual = lapply(model,fortify)
 lapply(model,function(x)x$call)
 ```
 
-We will now visually check the coefficients. We avoid the final model with interaction as the number of terms is too big to comprehend visually.
+The interaction model has too many variables, according to the model equations. It is difficult to visualize such a model. Therefore, we will only graph the coefficients of the other two models..
 
 ```{r}
 multiplot(model[1:2])
 ```
 
+```{r}
+lapply(model[1:2], function(x)summary(x))
+```
+
 Following the model fitting, we assess the residuals for model validation.
 
 ```{r}
-#| label: residual-plot
+#| label: fig-residual-plot
+#| fig-cap: The scatter plots of the residual vs. fitted value for the three models. There is heteroscedasticity in all three figures
 #| warning: false
 #| fig-width: 10
 #| fig-height: 10
@@ -391,6 +396,7 @@ model_residual_final |>
   ggplot(aes(x = .fitted, y = .stdresid)) +
   geom_point() +
   geom_hline(yintercept = 0) +
+  stat_smooth(geom = "smooth") +
   labs(x = "Fitted Values", y = "Residuals", color="Country") +
   facet_wrap(model~.,ncol = 1 )
 ```
