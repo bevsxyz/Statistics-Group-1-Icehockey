@@ -465,7 +465,57 @@ model_residual_final |>
   facet_wrap(model~.,ncol = 2 )
 ```
 
-The QQ plot confirms the normal distribution of residuals. The regression analysis provides insights into the relationships between variables and their impact on average points in women's ice hockey
+The QQ plot confirms the normal distribution of residuals. The regression analysis provides insights into the relationships between variables and their impact on average points in women's ice hockey.
+
+### Interpretation
+
+From the @tbl-summary-parameters and @tbl-summary-coefficients, we can interpret the Model 1. The very low p-value (\< 2.2e-16) for the f-test of the model suggests that the overall model is statistically significant. This implies that there exists a significant linear relationship between the predictors and the response variable.
+
+#### Coefficients:
+
+-   **Intercept**: The estimated `avg_points` when all other predictors are zero is approximately -0.123. As such this is insignificant.
+
+-   **positionF**: Forwards have an estimated increase in `avg_points` over the baseline set by the defenders, by approximately 0.0835 when other variables are held constant. This result is marginally significant (*p = 0.0587*).
+
+-   **countryCzech Republic, countryFinland, countryFrance, countryGermany, countryHungary, countryJapan, countrySweden, countrySwitzerland, countryUS**: These coefficients represent the estimated change in `avg_points` for players from these countries compared to the baseline set by **Canada**.
+
+-   **height**: For a one `cm` increase in height, there is an estimated decrease of approximately 0.0030 in `avg_points`. However, this change is not statistically significant, as the p-value is 0.4617.
+
+-    **weight**: For a one `Kg` increase in weight, there is an estimated increase of approximately 0.0026 in `avg_points`. However, this change is not statistically significant, as the p-value is 0.4906.
+
+-    **penalty_dur**: For a one `second` increase in penalty duration, there is an estimated increase of approximately 0.0040 in `avg_points`. However, this change is not statistically significant, as the p-value is 0.3570.
+
+-    **g_diff**: For a one-unit increase in goal difference, there is an estimated increase of approximately 0.0644 in `avg_points`. This change is highly statistically significant (p \< 0.001), suggesting a strong positive relationship with `avg_points`.
+
+-    **sog**: For a one-unit increase in shots on goal, there is an estimated increase of approximately 0.0242 in `avg_points`. This change is highly statistically significant (p \< 0.001), indicating a positive association with `avg_points`.
+
+-   **age**: For a one-year increase in age, there is an estimated increase of approximately 0.0026 in `avg_points`. However, this change is not statistically significant, as the p-value is 0.5733.
+
+-    **shootR**: Right shooters have an estimated increase in `avg_points` over the baseline set by the left shooters, by approximately 0.05878 when other variables are held constant. However, this change is not statistically
+    significant, as the
+    p-value is 0.1493.
+
+-    **duration**: For a one second increase in duration, there is an estimated increase of approximately 0.00004 in `avg_points`. This change is statistically significant (p = 0.0007), suggesting a positive relationship with `avg_points`.
+
+#### Significance:
+
+-   The significance of each coefficient is indicated by the p-values. For instance:
+
+    -   `countryCzech Republic, countryFrance, countryGermany, countryHungary, countryJapan, countrySweden, countrySwitzerland, g_diff, sog, duration` are highly significant (*p \< 0.05*).
+
+    -   `positionF` is marginally significant (*p = 0.0587*).
+
+    -   `height, weight, penalty_dur, age, shootR` are not statistically significant based on conventional significance levels (*p \> 0.05*).
+
+#### Model Fit:
+
+-   **Multiple R-squared**: The model explains approximately 74.33% of the variance in the dependent variable `avg_points`.
+
+-   **Adjusted R-squared**: This is a modified version of the R-squared that adjusts for the number of predictors in the model. It is 71.82% in this model.
+
+-   **Residual standard error**: This is an estimate of the standard deviation of the residuals. It is 0.2507 in this model.
+
+In summary, the model appears to be a good fit, explaining a substantial portion of the variance in `avg_points`. Several predictors are statistically significant, while others are not. Consideration can be given to the practical significance of the coefficients and potential refinement of the model based on domain knowledge. This could potentially hold significant value in incorporating interaction without overfitting.
 
 ```{r}
 #| label: tbl-spcor
