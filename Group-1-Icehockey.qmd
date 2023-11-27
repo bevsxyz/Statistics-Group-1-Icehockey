@@ -535,7 +535,7 @@ ppcor::spcor(df |> select_if(is.numeric), method = "pearson")$estimate |>
 
 ```{r}
 #| label: tbl-application
-#| tbl-cap: The table shows how much a country's overall points go up when their players become more aggressive by 20%. This is shown in the number of shots on goal predictor variable. We assume a single game per country in which all players participated. The aggregate points from both observations and estimations are the same, as the country plays a role in the models' prediction process. We can see that more points are being scored, with an average increase of 16.8%.
+#| tbl-cap: The table shows how much a country's overall points go up when their players increase their attacking strategy, which is reflected by a 20% increase in the shots on goal predictor variable. We assume a single game per country in which all players participated. The aggregate points from both observations and estimations are the same, as the country plays a role in the models' prediction process. We can see that more points are being scored, with an average increase of 16.8%.
 top_10 = df |> group_by(country) |> arrange(country)
 top_10$estimate = model[[1]] |> predict(top_10 |> select(-c(Name, avg_points)))
 top_10 = top_10 |> mutate(sog = sog * 1.2)
