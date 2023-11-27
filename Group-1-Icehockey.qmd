@@ -224,8 +224,8 @@ df |> summarise(across(
 #| label: corr-functions
 #| echo: false
 # Calculate correlation matrix
-df.corr <- function(df) {
-  df = df |>  select(where(is.numeric)) |>  cor()
+df.corr <- function(df, method) {
+  df = df |>  select(where(is.numeric)) |>  cor(method = method)
   mrows <<- rownames(df)
   # Convert the matrix output to tibble dataframe
   
@@ -236,9 +236,9 @@ df.corr <- function(df) {
   return(df)
 }
 # Correlation Plotting Function
-plot.corr <- function(df){
+plot.corr <- function(df, method){
   # Plot correlation heatmap
-  ggplot(df.corr(df), aes(var_1, var_2, fill = cor, label = round(cor, 2))) +
+  ggplot(df.corr(df,method), aes(var_1, var_2, fill = cor, label = round(cor, 2))) +
     theme(axis.text.x = element_text(
       angle = 90,
       vjust = 0.5,
@@ -257,7 +257,7 @@ plot.corr <- function(df){
 #| fig-width: 8
 #| fig-height: 8
 #| fig-cap: "Correlation Matrix of all the Variables"
-plot.corr(df)
+plot.corr(df, "pearson")
 ```
 
 The relationships between the variables are reflected in the correlation matrix. It is evident that there are no independent variable pairs with an absolute correlation greater than 0.7. Therefore, we can proceed with our features because of the absence of multicollinearity.
@@ -284,6 +284,7 @@ All variables, except duration, have an approximately linear relationship with a
 
 ```{r}
 #| label: tbl-outlier
+#| tbl-cap: The outlier in the duration data.
 df |> select(Name, country, duration) |>
   filter(duration == max(duration)) |>
   kable()
@@ -294,6 +295,7 @@ To address the anomaly, we rectify the duration for Emma Ingold and reassess the
 ```{r}
 #| label: fig-replace-outlier
 #| fig-cap: Duration vs Average Points scatter plot after replacing the outlier.
+#| fig-width: 8
 df = df |> mutate(duration = replace(duration,
                                      Name == "Emma Ingold",
                                      as.numeric(
@@ -318,7 +320,7 @@ Data quality and consistency are ensured by a final check of the correlation mat
 #| fig-height: 8
 #| fig-cap: "Correlation Matrix after fixing the outlier"
 # Plot correlation heatmap
-plot.corr(df)
+plot.corr(df,"pearson")
 ```
 
 We can see that fixing the outlier increased the correlation between the duration and average points from 0.09 to 0.53. This increase may prove advantageous to our modeling efforts.
@@ -368,7 +370,7 @@ model = lapply(list(fullModel1, fullModel2, fullModel3), function(x)
 ```
 
 ```{r}
-#| label: model-summary
+#| label: model-equations
 model_residual = lapply(model,fortify)
 lapply(model,function(x)x$call)
 ```
@@ -376,11 +378,16 @@ lapply(model,function(x)x$call)
 The interaction model has too many variables, according to the model equations. It is difficult to visualize such a model. Therefore, we will only graph the coefficients of the other two models..
 
 ```{r}
+#| label: fig-coefficient-plot
+#| fig-width: 8
+#| fig-height: 8
+#| fig-cap: The coefficients for the full model[1] and the model without categories[2] are shown in the figure. The intercepts and a few categories of the country variable are evidently devoid of statistical significance, as their confidence interval contains zero. The t-test statistic can be used to determine the significance of variables with coefficients close to 0.
 multiplot(model[1:2])
 ```
 
 ```{r}
 #| label: tbl-summary-parameters
+#| tbl-cap: The table compares the final model parameters for the full model[1], the model without categories[2], and the complex model[3] with all pairs of interactions. Model 3 best explains our dataset, with a R2 value of 0.93.  It also has the lowest RSS number under deviance. Then comes the full model[1], which has a R2 of 0.74. All the three models have significant p-values from the F-Test. Complex model 3 is the optimal model for AIC, whereas model 2 is the optimal model for BIC.
 model_summary = lapply(1:3, function(x)
   glance(model[[x]]) |>
     pivot_longer(everything(),names_to = "Parameter", values_to = as.character(x)))
@@ -390,8 +397,11 @@ model_summary[[1]] |>
   kable()
 ```
 
+Given the model parameters, we believe it is ideal to proceed with model 1 to avoid both under-fitting and over-fitting.
+
 ```{r}
 #| label: tbl-summary-coefficients
+#| tbl-cap: Model 1 includes the dependent variable average points and several predictor variables, such as position, country, height, weight, penalty_dur, g_diff, sog, age, shoot, and duration. The position variable is marginally significant. However, the variables country, g_diff, sog, and duration are highly significant, with p-values below 0.05.
 tidy(model[[1]]) |> mutate(signific = case_when(
   between(p.value, 0.05, 0.1) ~ '.',
   between(p.value, 0.01, 0.05) ~
@@ -405,7 +415,7 @@ tidy(model[[1]]) |> mutate(signific = case_when(
                   round(.x, digits = 4)) |> kable()
 ```
 
-Following the model fitting, we assess the residuals for model validation.
+Upon completion of the model fitting process, we evaluate the residuals of model 1 for model validation.
 
 ```{r}
 #| label: fig-residual-plot
@@ -427,6 +437,7 @@ model_residual_final |>
 
 ```{r}
 #| label: fig-redsidual-facet
+#| fig-cap: The residual plot with countries shows an approximate homoscedastic behavior when separated out.
 #| warning: false
 #| fig-width: 10
 #| fig-height: 10
@@ -443,6 +454,7 @@ The residual analysis ensures that the model assumptions are met. Additionally, 
 
 ```{r}
 #| label: fig-qq-facet
+#| fig-cap: The figure depicts the qq-plot for the standardized residuals of all three models. All three models show a normal distribution of residuals.
 #| warning: false
 #| fig-width: 10
 #| fig-height: 10
@@ -457,36 +469,26 @@ The QQ plot confirms the normal distribution of residuals. The regression analys
 
 ```{r}
 #| label: tbl-spcor
+#| tbl-cap: The semi-partial correlations of the significant numerical variables.
 ppcor::spcor(df |> select_if(is.numeric), method = "pearson")$estimate |>
-  as_tibble(rownames="rowname") |> 
-  filter(rowname == "avg_points") |>  select("g_diff","sog","duration") |> kable()
+  as_tibble(rownames = "rowname") |>
+  filter(rowname == "avg_points") |>  select("g_diff", "sog", "duration") |> kable()
 ```
 
-# Top 10% Performer Metrics
+## Top 10% Performer Metrics
 
 ```{r}
+#| label: fig-corr-3
+#| fig-width: 8
+#| fig-height: 8
+#| fig-cap: "Spearman Rank Correlation Matrix of all the Variables with the binary variable marker, denoting whether the player is a top performer."
 top_10 = df |> top_frac(.10, avg_points) |> arrange(desc(avg_points))
-#top_10 = df |> mutate(marker = as.numeric(Name %in% tail(Name[order(avg_points)], 20))) |> arrange(desc(avg_points))
-plot.corr(top_10)
+top_10 = df |> mutate(marker = as.numeric(Name %in% tail(Name[order(avg_points)], 20))) |> arrange(desc(avg_points))
+plot.corr(top_10, "spearman")
 ```
 
 ```{r}
-# nullModel = lm(marker ~ 1, data=top_10 |> select(-c(Name,avg_points)))
-# fullModel = lm(marker ~ ., data= top_10 |> select(-c(Name,avg_points)))
-# step(
-#   fullModel,
-#   scope = list(lower = nullModel, upper = fullModel),
-#   direction = "forward"
-#  ) |>  glance()
-  # fortify() |> ggplot(aes(x = .fitted, y = .stdresid)) +
-  # geom_point() +
-  # geom_hline(yintercept = 0) +
-  # stat_smooth(geom = "smooth") +
-  # labs(x = "Fitted Values", y = "Residuals", color="Country")
-```
 
-```{r}
-lm(avg_points ~ position + sog+log(duration)+country, data= top_10) |> summary()
 ```
 
 # References
