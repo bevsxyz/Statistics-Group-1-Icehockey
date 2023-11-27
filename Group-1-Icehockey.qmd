@@ -489,21 +489,19 @@ From the @tbl-summary-parameters and @tbl-summary-coefficients, we can interpret
 
 -   **height**: For a one `cm` increase in height, there is an estimated decrease of approximately 0.0030 in `avg_points`. However, this change is not statistically significant, as the p-value is 0.4617.
 
--    **weight**: For a one `Kg` increase in weight, there is an estimated increase of approximately 0.0026 in `avg_points`. However, this change is not statistically significant, as the p-value is 0.4906.
+-   **weight**: For a one `Kg` increase in weight, there is an estimated increase of approximately 0.0026 in `avg_points`. However, this change is not statistically significant, as the p-value is 0.4906.
 
--    **penalty_dur**: For a one `second` increase in penalty duration, there is an estimated increase of approximately 0.0040 in `avg_points`. However, this change is not statistically significant, as the p-value is 0.3570.
+-   **penalty_dur**: For a one `second` increase in penalty duration, there is an estimated increase of approximately 0.0040 in `avg_points`. However, this change is not statistically significant, as the p-value is 0.3570.
 
--    **g_diff**: For a one-unit increase in goal difference, there is an estimated increase of approximately 0.0644 in `avg_points`. This change is highly statistically significant (p \< 0.001), suggesting a strong positive relationship with `avg_points`.
+-   **g_diff**: For a one-unit increase in goal difference, there is an estimated increase of approximately 0.0644 in `avg_points`. This change is highly statistically significant (p \< 0.001), suggesting a strong positive relationship with `avg_points`.
 
--    **sog**: For a one-unit increase in shots on goal, there is an estimated increase of approximately 0.0242 in `avg_points`. This change is highly statistically significant (p \< 0.001), indicating a positive association with `avg_points`.
+-   **sog**: For a one-unit increase in shots on goal, there is an estimated increase of approximately 0.0242 in `avg_points`. This change is highly statistically significant (p \< 0.001), indicating a positive association with `avg_points`.
 
 -   **age**: For a one-year increase in age, there is an estimated increase of approximately 0.0026 in `avg_points`. However, this change is not statistically significant, as the p-value is 0.5733.
 
--    **shootR**: Right shooters have an estimated increase in `avg_points` over the baseline set by the left shooters, by approximately 0.05878 when other variables are held constant. However, this change is not statistically
-    significant, as the
-    p-value is 0.1493.
+-   **shootR**: Right shooters have an estimated increase in `avg_points` over the baseline set by the left shooters, by approximately 0.05878 when other variables are held constant. However, this change is not statistically significant, as the p-value is 0.1493.
 
--    **duration**: For a one second increase in duration, there is an estimated increase of approximately 0.00004 in `avg_points`. This change is statistically significant (p = 0.0007), suggesting a positive relationship with `avg_points`.
+-   **duration**: For a one second increase in duration, there is an estimated increase of approximately 0.00004 in `avg_points`. This change is statistically significant (p = 0.0007), suggesting a positive relationship with `avg_points`.
 
 #### Significance:
 
@@ -533,20 +531,21 @@ ppcor::spcor(df |> select_if(is.numeric), method = "pearson")$estimate |>
   filter(rowname == "avg_points") |>  select("g_diff", "sog", "duration") |> kable()
 ```
 
-## Top 10% Performer Metrics
+## Applications of the model
 
 ```{r}
-#| label: fig-corr-3
-#| fig-width: 8
-#| fig-height: 8
-#| fig-cap: "Spearman Rank Correlation Matrix of all the Variables with the binary variable marker, denoting whether the player is a top performer."
-top_10 = df |> top_frac(.10, avg_points) |> arrange(desc(avg_points))
-top_10 = df |> mutate(marker = as.numeric(Name %in% tail(Name[order(avg_points)], 20))) |> arrange(desc(avg_points))
-plot.corr(top_10, "spearman")
-```
-
-```{r}
-
+#| label: tbl-application
+#| tbl-cap: The table shows how much a country's overall points go up when their players become more aggressive by 20%. This is shown in the number of shots on goal predictor variable. We assume a single game per country in which all players participated. The aggregate points from both observations and estimations are the same, as the country plays a role in the models' prediction process. We can see that more points are being scored, with an average increase of 16.8%.
+top_10 = df |> group_by(country) |> arrange(country)
+top_10$estimate = model[[1]] |> predict(top_10 |> select(-c(Name, avg_points)))
+top_10 = top_10 |> mutate(sog = sog * 1.2)
+top_10$prediction = model[[1]] |> predict(top_10 |> select(-c(Name, avg_points)))
+top_10 |> group_by(country) |>  summarise(
+  Observation = sum(avg_points),
+  Estimate = sum(estimate),
+  Prediction = sum(prediction),
+  "% Increase" = (Prediction - Observation) / Observation * 100
+) |> kable()
 ```
 
 # References
