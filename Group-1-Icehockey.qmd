@@ -477,7 +477,9 @@ The QQ plot confirms the normal distribution of residuals. The regression analys
 
 ### Interpretation
 
-From the @tbl-summary-parameters and @tbl-summary-coefficients, we can interpret the Model 1. The very low p-value (\< 2.2e-16) for the f-test of the model suggests that the overall model is statistically significant. This implies that there exists a significant linear relationship between the predictors and the response variable.
+From the @tbl-summary-parameters and @tbl-summary-coefficients, we can interpret the Model 1[^2]. The very low p-value (\< 2.2e-16) for the f-test of the model suggests that the overall model is statistically significant. This implies that there exists a significant linear relationship between the predictors and the response variable.
+
+[^2]: Refer to @fig-coefficient-plot for coefficient plot.
 
 #### Coefficients:
 
@@ -523,6 +525,12 @@ From the @tbl-summary-parameters and @tbl-summary-coefficients, we can interpret
 
 In summary, the model appears to be a good fit, explaining a substantial portion of the variance in `avg_points`. Several predictors are statistically significant, while others are not. Consideration can be given to the practical significance of the coefficients and potential refinement of the model based on domain knowledge. This could potentially hold significant value in incorporating interaction without overfitting.
 
+We also wished to check the semi-partial correlation to understand the unique contribution of each individual predictor variable to the dependent variable (`avg_points`),
+while accounting for the effects of all other predictors. It helps
+answer the question, "How much does the correlation between a specific
+predictor and the dependent variable change when we control for the
+other predictors in the model?" However, we faced issues calculating the same with categorical variables. Hence, we only checked the semi-partial correlation regarding the numeric variables @tbl-spcor.
+
 ```{r}
 #| label: tbl-spcor
 #| tbl-cap: The semi-partial correlations of the significant numerical variables.
@@ -533,9 +541,11 @@ ppcor::spcor(df |> select_if(is.numeric), method = "pearson")$estimate |>
 
 ## Applications of the model
 
+We elucidated the linear relationships between the predictor variables and response variables with our model. However, we also wished to explore the business aspects of this model. Therefore, in this section, we try to model an increase in attacking strategy. We implement this in the model through the shots on goal variable. We will assume that all the countries have one game with a hypothetical opponent, and we will calculate the overall points scored by the country. This will be our prediction. We will compare this with the overall observed and estimated points.
+
 ```{r}
 #| label: tbl-application
-#| tbl-cap: The table shows how much a country's overall points go up when their players increase their attacking strategy, which is reflected by a 20% increase in the shots on goal predictor variable. We assume a single game per country in which all players participated. The aggregate points from both observations and estimations are the same, as the country plays a role in the models' prediction process. We can see that more points are being scored across countries.
+#| tbl-cap: The table shows how much a country's overall points go up when their players increase their attacking strategy, which is reflected by a 20% increase in the shots on goal predictor variable. We assume a single game per country in which all players participated. The aggregate points from both observations and estimations are the same, as the country plays a role in the models' prediction process. We can see that more points are being scored, with an average increase of 12.4%.
 pract_app = df |> group_by(country) |> arrange(country)
 pract_app$estimate = model[[1]] |> predict(pract_app |> select(-c(Name, avg_points)))
 pract_app = pract_app |> mutate(sog = sog * 1.2)
@@ -551,9 +561,9 @@ pract_app |> kable()
 
 ```{r}
 #| label: fig-pract
-#| fig-cap: Pract
-#| fig-width: 8
-#| fig-height: 8
+#| fig-cap: The figure compares the relative increase in prediction regarding the estimate of the points scored by each country when their players increase their attacking strategy, which is reflected by a 20% increase in the shots on goal predictor variable. As per the model, there is no expense associated with enhancing the offensive approach.
+#| fig-width: 10
+#| fig-height: 2
 pract_app |> pivot_longer(cols = Estimate:Prediction) |>
   ggplot(aes(x = reorder(country, Observation), y = value)) +
   geom_col(aes(fill = name), position = "dodge") +
@@ -569,5 +579,9 @@ pract_app |> pivot_longer(cols = Estimate:Prediction) |>
   theme(legend.title = element_blank()) +
   labs(x="Country", y="Aggregate Points")
 ```
+
+We can see that more points are being scored, with an average increase of 12.4% across the countries. As per the model, there is no expense associated with enhancing the offensive approach.
+
+{{< pagebreak >}}
 
 # References
