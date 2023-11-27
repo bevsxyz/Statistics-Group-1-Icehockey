@@ -256,7 +256,7 @@ plot.corr <- function(df, method) {
       space = "Lab",
       name = "Correlation"
     ) +
-    geom_text(color = "white")
+    geom_text(color = "black")
 }
 ```
 
