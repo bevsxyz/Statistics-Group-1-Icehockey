@@ -232,23 +232,31 @@ df.corr <- function(df, method) {
   df = df |>
     as_tibble(rownames = "var_1") |>
     gather(key = "var_2", value =
-             "cor",-1) |> drop_na()
+             "cor", -1) |> drop_na()
   return(df)
 }
 # Correlation Plotting Function
-plot.corr <- function(df, method){
+plot.corr <- function(df, method) {
   # Plot correlation heatmap
-  ggplot(df.corr(df,method), aes(var_1, var_2, fill = cor, label = round(cor, 2))) +
+  ggplot(df.corr(df, method),
+         aes(var_1, var_2, fill = cor, label = round(cor, 2))) +
     theme(axis.text.x = element_text(
       angle = 90,
       vjust = 0.5,
       hjust = 1
     ),
-    axis.title = element_blank(),
-    ) +
+    axis.title = element_blank(),) +
     geom_tile() + ylim(mrows) + xlim(rev(mrows)) +
-    geom_text(color = "white") +
-    labs(fill = "Correlation")
+    scale_fill_gradient2(
+      low = "blue",
+      high = "red",
+      mid = "white",
+      midpoint = 0,
+      limit = c(-1, 1),
+      space = "Lab",
+      name = "Correlation"
+    ) +
+    geom_text(color = "white")
 }
 ```
 
