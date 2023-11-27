@@ -1,6 +1,6 @@
 ---
-title: Statistics Group 1 Project Proposal
-subtitle: Ice Hockey
+title: "Ice Hockey: Sports Analysis Project"
+subtitle: Group 1
 date: 27 November 2023
 author:
   - name: Bevan Stanely
