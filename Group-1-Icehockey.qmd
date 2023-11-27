@@ -535,17 +535,39 @@ ppcor::spcor(df |> select_if(is.numeric), method = "pearson")$estimate |>
 
 ```{r}
 #| label: tbl-application
-#| tbl-cap: The table shows how much a country's overall points go up when their players increase their attacking strategy, which is reflected by a 20% increase in the shots on goal predictor variable. We assume a single game per country in which all players participated. The aggregate points from both observations and estimations are the same, as the country plays a role in the models' prediction process. We can see that more points are being scored, with an average increase of 16.8%.
-top_10 = df |> group_by(country) |> arrange(country)
-top_10$estimate = model[[1]] |> predict(top_10 |> select(-c(Name, avg_points)))
-top_10 = top_10 |> mutate(sog = sog * 1.2)
-top_10$prediction = model[[1]] |> predict(top_10 |> select(-c(Name, avg_points)))
-top_10 |> group_by(country) |>  summarise(
+#| tbl-cap: The table shows how much a country's overall points go up when their players increase their attacking strategy, which is reflected by a 20% increase in the shots on goal predictor variable. We assume a single game per country in which all players participated. The aggregate points from both observations and estimations are the same, as the country plays a role in the models' prediction process. We can see that more points are being scored across countries.
+pract_app = df |> group_by(country) |> arrange(country)
+pract_app$estimate = model[[1]] |> predict(pract_app |> select(-c(Name, avg_points)))
+pract_app = pract_app |> mutate(sog = sog * 1.2)
+pract_app$prediction = model[[1]] |> predict(pract_app |> select(-c(Name, avg_points)))
+pract_app = pract_app |> group_by(country) |>  summarise(
   Observation = sum(avg_points),
   Estimate = sum(estimate),
   Prediction = sum(prediction),
-  "% Increase" = (Prediction - Observation) / Observation * 100
-) |> kable()
+  "% Increase" = round((Prediction - Observation) / Observation * 100,2)
+) 
+pract_app |> kable()
+```
+
+```{r}
+#| label: fig-pract
+#| fig-cap: Pract
+#| fig-width: 8
+#| fig-height: 8
+pract_app |> pivot_longer(cols = Estimate:Prediction) |>
+  ggplot(aes(x = reorder(country, Observation), y = value)) +
+  geom_col(aes(fill = name), position = "dodge") +
+  geom_text(
+    aes(label = ifelse(
+      name == "Estimate", paste(`% Increase`, "%"),
+      ""
+    )),
+    position = position_dodge(width = .9),
+    vjust = 0,
+    show.legend = FALSE
+  ) +
+  theme(legend.title = element_blank()) +
+  labs(x="Country", y="Aggregate Points")
 ```
 
 # References
