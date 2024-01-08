@@ -1,31 +1,41 @@
 # Women's Ice Hockey Performance Modeling and Strategic Insights Project
 
 ## Introduction
+
 This repository contains the code and analysis for a sports analytics project focused on women's ice hockey. The analysis aims to identify key factors predicting a player's performance using data from the 2023 IIHF World Women's Championship.
 
 ## Executive Summary
+
 Ice hockey is a fast-paced team sport, and our project specifically focuses on the 2023 IIHF World Women's Championship. The analysis involves regression models to understand the factors influencing player performance.
 
 ## Problem Statement
+
 The main objective is to systematically identify and analyze the key factors that reliably predict a player's performance. This includes analyzing physical, skill-based, psychological, and strategic elements. The project aims to provide insights for data-driven decisions in ice hockey.
 
 ## Proposed Solution
+
 We compiled a tidy dataset from publicly available data of the 2023 Women's Ice Hockey World Championship. The regression analysis helps identify the dependence of various variables on the player's performance. The resulting model provides insights for team strategizing and enhances understanding for fans.
 
 ## Data Sources
+
 We collected data from various sources, including Quant Hockey Website, IIHF Official Website, and individual team statistics from Team USA, Team Canada, Team Sweden, and others. The dataset is available in [data.csv](data.csv).
 
 ## Limitations
+
 The dataset has limitations, including a small sample size compared to other tournaments and the tournament structure having two parts (group stage and knockout), affecting match time and scoring opportunities.
 
 ## Analysis
+
 ### Exploratory Data Analysis
+
 We performed exploratory data analysis to understand the distribution and relationships within the dataset. The correlation matrix, box plots, and scatter plots were used to analyze the variables.
 
 ### Regression Analysis
+
 Regression models were constructed, and a stepwise regression strategy was employed to choose the optimal model. The final model explains a significant portion of the variance in the dependent variable, and predictor variables were evaluated for significance.
 
 ### Applications of the Model
+
 We explored the business application of the model by simulating an increase in attacking strategy for each country, resulting in an average increase of 12.4% in aggregate points.
 
 ## How to Use This Repository
@@ -41,8 +51,8 @@ Before running the analysis, ensure that you have the necessary software and lib
 
 1. Clone the repository to your local machine:
 
-```{bash}
-git clone https://github.com/your-username/ice-hockey-analysis.git
+```bash
+git clone https://github.com/bevsxyz/ice-hockey-analysis.git
 ```
 
 2. Open the Quarto file (`Group-1-Icehockey.qmd`) in RStudio.
